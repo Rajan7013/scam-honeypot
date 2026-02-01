@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scam Honeypot Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --bg-dark: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+        
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 2rem;
+            text-align: center;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.95;
+            font-weight: 400;
+        }
+        
+        /* Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        /* Cards */
+        .card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 2rem;
+            border: 1px solid var(--border);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            border-color: var(--primary);
+        }
+        
+        .card h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--border);
+        }
+        
+        /* Form Elements */
+        textarea {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            resize: vertical;
+            min-height: 120px;
+            transition: all 0.3s ease;
+        }
+        
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+        
+        textarea::placeholder {
+            color: var(--text-secondary);
+        }
+        
+        select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            border: 2px solid var(--border);
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        /* Buttons */
+        button {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            padding: 0.875rem 2rem;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+            width: 100%;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Results */
+        .result {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: var(--bg-dark);
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .badge-scam {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
+        }
+        
+        .badge-safe {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
+        }
+        
+        /* Conversation Items */
+        .conversation {
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            background: var(--bg-dark);
+            border-radius: 12px;
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+        
+        .conversation:hover {
+            background: var(--bg-card-hover);
+            transform: translateX(5px);
+        }
+        
+        .conversation strong {
+            color: var(--primary);
+        }
+        
+        .conversation code {
+            background: var(--bg-card);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            color: var(--warning);
+        }
+        
+        /* Loading Spinner */
+        .spinner {
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-left: 0.5rem;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: var(--bg-card);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem;
+            color: var(--text-secondary);
+        }
+        
+        .empty-state-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+        
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: var(--bg-dark);
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary);
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .container {
+                padding: 1rem;
+            }
+        }
+        
+        /* Intelligence Items */
+        .intelligence-item {
+            padding: 0.75rem 1rem;
+            margin: 0.5rem 0;
+            background: rgba(245, 158, 11, 0.1);
+            border-left: 4px solid var(--warning);
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+        
+        .intelligence-type {
+            color: var(--warning);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            margin-bottom: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🕵️ Agentic Honey-Pot</h1>
+        <p class="subtitle">AI-Powered Scam Detection & Intelligence Extraction System</p>
+    </header>
+    
+    <div class="container">
+        <!-- Stats Dashboard -->
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-value" id="totalScans">0</div>
+                <div class="stat-label">Total Scans</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="scamsDetected">0</div>
+                <div class="stat-label">Scams Detected</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="activeConversations">0</div>
+                <div class="stat-label">Active Chats</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="intelligenceExtracted">0</div>
+                <div class="stat-label">Intel Extracted</div>
+            </div>
+        </div>
+        
+        <!-- Main Grid -->
+        <div class="grid">
+            <!-- Scam Detection Test -->
+            <div class="card">
+                <h2>🔍 Scam Detection Test</h2>
+                <textarea id="detectMessage" placeholder="Enter a suspicious message to analyze...
+Example: 'Congratulations! You won 10 lakh rupees. Click here to claim: bit.ly/prize123'">Congratulations! You won 10 lakh rupees in lucky draw. Click this link to claim: bit.ly/claim123</textarea>
+                <button onclick="testDetection()" id="detectBtn">
+                    Analyze Message
+                </button>
+                <div id="detectResult" class="result" style="display:none;"></div>
+            </div>
+            
+            <!-- AI Engagement Test -->
+            <div class="card">
+                <h2>💬 AI Engagement Test</h2>
+                <select id="personaSelect">
+                    <option value="">🎲 Random Persona</option>
+                    <option value="elderly">👴 Ramesh (Elderly, 68)</option>
+                    <option value="tech_novice">👩 Priya (Tech Novice, 35)</option>
+                    <option value="eager_investor">👨‍💼 Arjun (Investor, 42)</option>
+                </select>
+                <textarea id="engageMessage" placeholder="Enter scammer message to engage with...
+Example: 'Hello sir, your bank account will be blocked. Please verify by sharing OTP.'">Hello sir, your bank account will be blocked. Please verify your account by sharing OTP.</textarea>
+                <button onclick="testEngagement()" id="engageBtn">
+                    Start Engagement
+                </button>
+                <div id="engageResult" class="result" style="display:none;"></div>
+            </div>
+        </div>
+        
+        <!-- Conversation History -->
+        <div class="card">
+            <h2>📜 Active Conversations</h2>
+            <div id="conversations">
+                <div class="empty-state">
+                    <div class="empty-state-icon">💬</div>
+                    <p>No active conversations yet. Start engaging with scammers above!</p>
+                </div>
+            </div>
+            <button onclick="loadConversations()">🔄 Refresh Conversations</button>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE = '';
+        let currentConversationId = null;
+        let stats = {
+            totalScans: 0,
+            scamsDetected: 0,
+            activeConversations: 0,
+            intelligenceExtracted: 0
+        };
+        
+        // Update stats display
+        function updateStats() {
+            document.getElementById('totalScans').textContent = stats.totalScans;
+            document.getElementById('scamsDetected').textContent = stats.scamsDetected;
+            document.getElementById('activeConversations').textContent = stats.activeConversations;
+            document.getElementById('intelligenceExtracted').textContent = stats.intelligenceExtracted;
+        }
+        
+        // Test scam detection
+        async function testDetection() {
+            const message = document.getElementById('detectMessage').value.trim();
+            const resultDiv = document.getElementById('detectResult');
+            const btn = document.getElementById('detectBtn');
+            
+            if (!message) {
+                alert('Please enter a message to analyze');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = 'Analyzing... <span class="spinner"></span>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/detect`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({message})
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                
+                stats.totalScans++;
+                if (data.is_scam) stats.scamsDetected++;
+                updateStats();
+                
+                const badge = data.is_scam ? 
+                    '<span class="badge badge-scam">🚨 SCAM DETECTED</span>' :
+                    '<span class="badge badge-safe">✅ SAFE MESSAGE</span>';
+                
+                resultDiv.innerHTML = `
+${badge}
+
+<strong>Confidence:</strong> ${(data.confidence * 100).toFixed(1)}%
+<strong>Scam Type:</strong> ${data.scam_type || 'N/A'}
+
+<strong>Analysis:</strong>
+${data.explanation || 'No additional details available.'}
+                `;
+                resultDiv.style.display = 'block';
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="badge badge-scam">❌ ERROR</span>\n\n${error.message}\n\nMake sure the server is running and your Gemini API key is configured.`;
+                resultDiv.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Analyze Message';
+            }
+        }
+        
+        // Test AI engagement
+        async function testEngagement() {
+            const message = document.getElementById('engageMessage').value.trim();
+            const persona = document.getElementById('personaSelect').value;
+            const resultDiv = document.getElementById('engageResult');
+            const btn = document.getElementById('engageBtn');
+            
+            if (!message) {
+                alert('Please enter a scammer message');
+                return;
+            }
+            
+            btn.disabled = true;
+            btn.innerHTML = 'Engaging... <span class="spinner"></span>';
+            
+            try {
+                const body = {message};
+                if (currentConversationId) {
+                    body.conversation_id = currentConversationId;
+                }
+                
+                const response = await fetch(`${API_BASE}/engage`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(body)
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                currentConversationId = data.conversation_id;
+                
+                let extracted = '';
+                if (data.extracted_data && data.extracted_data.length > 0) {
+                    stats.intelligenceExtracted += data.extracted_data.length;
+                    updateStats();
+                    
+                    extracted = '\n\n<strong>🎯 Extracted Intelligence:</strong>\n';
+                    data.extracted_data.forEach(item => {
+                        extracted += `<div class="intelligence-item">
+<div class="intelligence-type">${item.type}</div>
+${item.value} (Confidence: ${(item.confidence * 100).toFixed(0)}%)
+</div>`;
+                    });
+                }
+                
+                resultDiv.innerHTML = `
+<strong>Persona:</strong> ${data.persona}
+<strong>Conversation ID:</strong> <code>${data.conversation_id}</code>
+
+<strong>AI Response:</strong>
+${data.response}${extracted}
+                `;
+                resultDiv.style.display = 'block';
+                
+                loadConversations();
+            } catch (error) {
+                resultDiv.innerHTML = `<span class="badge badge-scam">❌ ERROR</span>\n\n${error.message}\n\nMake sure:\n1. Server is running (python -m uvicorn app.main:app --reload)\n2. Gemini API key is set in .env file\n3. Dependencies are installed (pip install -r requirements.txt)`;
+                resultDiv.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = 'Start Engagement';
+            }
+        }
+        
+        // Load conversations
+        async function loadConversations() {
+            try {
+                const response = await fetch(`${API_BASE}/conversations`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load conversations');
+                }
+                
+                const data = await response.json();
+                const conversationsDiv = document.getElementById('conversations');
+                
+                if (data.conversations.length === 0) {
+                    conversationsDiv.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">💬</div>
+                            <p>No active conversations yet. Start engaging with scammers above!</p>
+                        </div>
+                    `;
+                    stats.activeConversations = 0;
+                } else {
+                    stats.activeConversations = data.conversations.length;
+                    conversationsDiv.innerHTML = data.conversations.map(conv => `
+                        <div class="conversation">
+                            <strong>👤 Persona:</strong> ${conv.persona}<br>
+                            <strong>💬 Messages:</strong> ${conv.message_count}<br>
+                            <strong>🎯 Intelligence:</strong> ${conv.intelligence_count} items<br>
+                            <strong>🆔 ID:</strong> <code>${conv.conversation_id}</code>
+                        </div>
+                    `).join('');
+                }
+                
+                updateStats();
+            } catch (error) {
+                console.error('Error loading conversations:', error);
+            }
+        }
+        
+        // Keyboard shortcuts
+        document.getElementById('detectMessage').addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                testDetection();
+            }
+        });
+        
+        document.getElementById('engageMessage').addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'Enter') {
+                testEngagement();
+            }
+        });
+        
+        // Load conversations on page load
+        loadConversations();
+        
+        // Auto-refresh conversations every 10 seconds
+        setInterval(loadConversations, 10000);
+    </script>
+</body>
+</html>
