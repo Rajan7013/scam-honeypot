@@ -25,6 +25,7 @@ class AIAgent:
     def _init_groq(self):
         """Initialize Groq API."""
         try:
+            # Initialize Groq client (no proxies parameter in newer versions)
             self.groq_client = Groq(api_key=config.Config.GROQ_API_KEY)
             self.api_available = True
             print("✅ Groq API initialized successfully")
