@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scam Honeypot Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>🕵️ Agentic Honey-Pot | Security Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        
+
         :root {
             --primary: #6366f1;
             --primary-dark: #4f46e5;
@@ -19,625 +21,944 @@
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
-            --bg-card-hover: #334155;
+            --info: #3b82f6;
+            --bg-dark: #0a0e1a;
+            --bg-card: #1a1f35;
+            --bg-card-hover: #252b45;
             --text-primary: #f1f5f9;
             --text-secondary: #94a3b8;
-            --border: #334155;
+            --border: #2d3548;
+            --glow: rgba(99, 102, 241, 0.3);
         }
-        
+
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg-dark);
+            background: linear-gradient(135deg, #0a0e1a 0%, #1a1f35 100%);
             color: var(--text-primary);
             min-height: 100vh;
             line-height: 1.6;
+            position: relative;
+            overflow-x: hidden;
         }
-        
-        /* Header */
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(circle at 20% 50%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Header - Minimal Navbar Style */
         header {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            padding: 2rem;
-            text-align: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+            background: rgba(26, 31, 53, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.3);
+            padding: 0.4rem 1.5rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
             position: sticky;
             top: 0;
             z-index: 100;
-        }
-        
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        
-        .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.95;
-            font-weight: 400;
-        }
-        
-        /* Container */
-        .container {
-            max-width: 1600px;
-            margin: 0 auto;
-            padding: 2rem;
-        }
-        
-        /* Grid Layout */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-            gap: 2rem;
-            margin-bottom: 2rem;
-        }
-        
-        /* Cards */
-        .card {
-            background: var(--bg-card);
-            border-radius: 16px;
-            padding: 2rem;
-            border: 1px solid var(--border);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s ease;
-        }
-        
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-            border-color: var(--primary);
-        }
-        
-        .card h2 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 1.5rem;
-            color: var(--text-primary);
             display: flex;
             align-items: center;
-            gap: 0.5rem;
-            padding-bottom: 1rem;
-            border-bottom: 2px solid var(--border);
+            justify-content: space-between;
+            gap: 1.5rem;
+            min-height: 48px;
         }
-        
-        /* Form Elements */
-        textarea {
-            width: 100%;
-            padding: 1rem;
-            border-radius: 12px;
-            border: 2px solid var(--border);
-            background: var(--bg-dark);
-            color: var(--text-primary);
-            font-size: 0.95rem;
-            font-family: 'Inter', sans-serif;
-            resize: vertical;
-            min-height: 120px;
-            transition: all 0.3s ease;
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
-        
-        textarea:focus {
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+
+        h1 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            white-space: nowrap;
         }
-        
-        textarea::placeholder {
+
+        @keyframes glow {
+
+            0%,
+            100% {
+                filter: brightness(1);
+            }
+
+            50% {
+                filter: brightness(1.2);
+            }
+        }
+
+        .subtitle {
+            font-size: 0.7rem;
+            opacity: 0.7;
+            font-weight: 400;
             color: var(--text-secondary);
+            margin: 0;
+            white-space: nowrap;
         }
-        
-        select {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border-radius: 10px;
-            border: 2px solid var(--border);
-            background: var(--bg-dark);
-            color: var(--text-primary);
-            font-size: 1rem;
-            font-family: 'Inter', sans-serif;
-            margin-bottom: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        select:focus {
-            outline: none;
-            border-color: var(--primary);
-        }
-        
-        /* Buttons */
-        button {
-            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
-            color: white;
-            border: none;
-            padding: 0.875rem 2rem;
-            border-radius: 10px;
-            font-size: 1rem;
+
+        .status-badge {
+            display: inline-block;
+            margin: 0;
+            padding: 0.15rem 0.5rem;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid var(--success);
+            border-radius: 50px;
+            color: var(--success);
+            font-size: 0.6rem;
             font-weight: 600;
-            cursor: pointer;
-            margin-top: 1rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
-            width: 100%;
+            white-space: nowrap;
         }
-        
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 15px -3px rgba(99, 102, 241, 0.4);
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+
+            50% {
+                transform: scale(1.05);
+                opacity: 0.8;
+            }
         }
-        
-        button:active {
-            transform: translateY(0);
+
+        /* Container */
+        .container {
+            max-width: 1800px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
         }
-        
-        button:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-            transform: none;
+
+        /* Section Separator */
+        .container>.grid:not(:last-child) {
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 2px solid;
+            border-image: linear-gradient(90deg, transparent, #6366f1, #8b5cf6, #ec4899, transparent) 1;
         }
-        
-        /* Results */
-        .result {
-            margin-top: 1.5rem;
-            padding: 1.5rem;
-            background: var(--bg-dark);
-            border-radius: 12px;
-            border: 1px solid var(--border);
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
-            white-space: pre-wrap;
-            max-height: 400px;
-            overflow-y: auto;
-            animation: slideIn 0.3s ease;
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            animation: fadeIn 0.8s ease;
         }
-        
-        @keyframes slideIn {
+
+        @keyframes fadeIn {
             from {
                 opacity: 0;
-                transform: translateY(-10px);
+                transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
             }
         }
-        
+
+        .stat-card {
+            background: rgba(26, 31, 53, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 1rem 1.25rem;
+            border: 2px solid transparent;
+            background-image:
+                linear-gradient(rgba(26, 31, 53, 0.6), rgba(26, 31, 53, 0.6)),
+                linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, transparent 0%, rgba(99, 102, 241, 0.1) 100%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 20px 60px 0 rgba(99, 102, 241, 0.3);
+            border-color: var(--primary);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-icon {
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.25rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Grid Layout */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+            gap: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Cards with glassmorphism */
+        .card {
+            background: rgba(26, 31, 53, 0.6);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 2px solid transparent;
+            background-image:
+                linear-gradient(rgba(26, 31, 53, 0.6), rgba(26, 31, 53, 0.6)),
+                linear-gradient(135deg, #3b82f6, #6366f1, #8b5cf6);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.3);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 60px 0 rgba(99, 102, 241, 0.2);
+            border-color: var(--primary);
+        }
+
+        .card:hover::after {
+            opacity: 1;
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid;
+            border-image: linear-gradient(90deg, #6366f1, #8b5cf6, #ec4899) 1;
+        }
+
+        .card h2::before {
+            content: attr(data-icon);
+            font-size: 1.5rem;
+        }
+
+        /* Form Elements */
+        textarea {
+            width: 100%;
+            padding: 0.875rem;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+            background: rgba(10, 14, 26, 0.6);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-family: 'Inter', sans-serif;
+            resize: none;
+            min-height: 100px;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+            position: relative;
+            z-index: 10;
+            pointer-events: auto;
+            cursor: text;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1), 0 0 20px rgba(99, 102, 241, 0.2);
+            background: rgba(10, 14, 26, 0.8);
+        }
+
+        textarea::placeholder {
+            color: var(--text-secondary);
+        }
+
+        select {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border-radius: 10px;
+            border: 2px solid var(--border);
+            background: rgba(10, 14, 26, 0.6);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            font-family: 'Inter', sans-serif;
+            margin-bottom: 0.75rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 10;
+            pointer-events: auto;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        /* Premium Buttons */
+        button {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 0.75rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+            pointer-events: auto;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.5);
+        }
+
+        button:active {
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Results with animation */
+        .result {
+            margin-top: 1.5rem;
+            padding: 1.5rem;
+            background: rgba(10, 14, 26, 0.8);
+            border-radius: 16px;
+            border: 1px solid var(--border);
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            white-space: pre-wrap;
+            max-height: 500px;
+            overflow-y: auto;
+            animation: slideUp 0.4s ease;
+            box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Scrollbar styling */
+        .result::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .result::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+        }
+
+        .result::-webkit-scrollbar-thumb {
+            background: var(--primary);
+            border-radius: 10px;
+        }
+
         /* Badges */
         .badge {
             display: inline-block;
-            padding: 0.5rem 1rem;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-        
-        .badge-scam {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
-            box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
-        }
-        
-        .badge-safe {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.3);
-        }
-        
-        /* Conversation Items */
-        .conversation {
-            padding: 1.5rem;
-            margin-bottom: 1rem;
-            background: var(--bg-dark);
-            border-radius: 12px;
-            border-left: 4px solid var(--primary);
-            transition: all 0.3s ease;
-        }
-        
-        .conversation:hover {
-            background: var(--bg-card-hover);
-            transform: translateX(5px);
-        }
-        
-        .conversation strong {
-            color: var(--primary);
-        }
-        
-        .conversation code {
-            background: var(--bg-card);
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
+            padding: 0.4rem 1rem;
+            border-radius: 50px;
             font-size: 0.85rem;
-            color: var(--warning);
+            font-weight: 600;
+            margin: 0.25rem;
+            animation: fadeIn 0.3s ease;
         }
-        
-        /* Loading Spinner */
+
+        .badge-success {
+            background: rgba(16, 185, 129, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .badge-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+        }
+
+        .badge-warning {
+            background: rgba(245, 158, 11, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .badge-info {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--info);
+            border: 1px solid var(--info);
+        }
+
+        /* Loading spinner */
         .spinner {
-            border: 3px solid var(--border);
+            border: 3px solid rgba(255, 255, 255, 0.1);
             border-top: 3px solid var(--primary);
             border-radius: 50%;
             width: 24px;
             height: 24px;
-            animation: spin 1s linear infinite;
+            animation: spin 0.8s linear infinite;
             display: inline-block;
             margin-left: 0.5rem;
         }
-        
+
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
-        
-        /* Stats */
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        
-        .stat-card {
-            background: var(--bg-card);
-            padding: 1.5rem;
-            border-radius: 12px;
+
+        /* Conversation items */
+        .conversation-item {
+            background: rgba(10, 14, 26, 0.6);
             border: 1px solid var(--border);
-            text-align: center;
-            transition: all 0.3s ease;
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-5px);
-            border-color: var(--primary);
-        }
-        
-        .stat-value {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 0.5rem;
-        }
-        
-        .stat-label {
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 3rem;
-            color: var(--text-secondary);
-        }
-        
-        .empty-state-icon {
-            font-size: 4rem;
+            border-radius: 16px;
+            padding: 1.5rem;
             margin-bottom: 1rem;
-            opacity: 0.5;
+            transition: all 0.3s ease;
+            animation: slideIn 0.4s ease;
         }
-        
-        /* Scrollbar */
-        ::-webkit-scrollbar {
-            width: 8px;
-            height: 8px;
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
-        
-        ::-webkit-scrollbar-track {
-            background: var(--bg-dark);
+
+        .conversation-item:hover {
+            background: rgba(10, 14, 26, 0.8);
+            border-color: var(--primary);
+            transform: translateX(5px);
         }
-        
-        ::-webkit-scrollbar-thumb {
-            background: var(--border);
-            border-radius: 4px;
+
+        /* Intelligence items */
+        .intelligence-item {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            font-family: 'Courier New', monospace;
+            animation: fadeIn 0.4s ease;
         }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary);
-        }
-        
+
         /* Responsive */
         @media (max-width: 768px) {
             .grid {
                 grid-template-columns: 1fr;
             }
-            
+
             h1 {
                 font-size: 2rem;
             }
-            
-            .container {
-                padding: 1rem;
+
+            .stat-value {
+                font-size: 2.5rem;
             }
         }
-        
-        /* Intelligence Items */
-        .intelligence-item {
-            padding: 0.75rem 1rem;
-            margin: 0.5rem 0;
-            background: rgba(245, 158, 11, 0.1);
-            border-left: 4px solid var(--warning);
-            border-radius: 8px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.9rem;
+
+        /* Success/Error states */
+        .success {
+            color: var(--success);
         }
-        
-        .intelligence-type {
+
+        .error {
+            color: var(--danger);
+        }
+
+        .warning {
             color: var(--warning);
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-            margin-bottom: 0.25rem;
         }
     </style>
 </head>
+
 <body>
     <header>
-        <h1>🕵️ Agentic Honey-Pot</h1>
-        <p class="subtitle">AI-Powered Scam Detection & Intelligence Extraction System</p>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <h1>🕵️ Agentic Honey-Pot</h1>
+            <span class="status-badge">🟢 Online</span>
+        </div>
+        <p class="subtitle">AI-Powered Scam Detection</p>
     </header>
-    
+
     <div class="container">
-        <!-- Stats Dashboard -->
-        <div class="stats">
+        <!-- Stats Section -->
+        <div class="stats-grid">
             <div class="stat-card">
+                <span class="stat-icon">🔍</span>
                 <div class="stat-value" id="totalScans">0</div>
                 <div class="stat-label">Total Scans</div>
             </div>
             <div class="stat-card">
+                <span class="stat-icon">⚠️</span>
                 <div class="stat-value" id="scamsDetected">0</div>
                 <div class="stat-label">Scams Detected</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="activeConversations">0</div>
+                <span class="stat-icon">💬</span>
+                <div class="stat-value" id="activeChats">0</div>
                 <div class="stat-label">Active Chats</div>
             </div>
             <div class="stat-card">
-                <div class="stat-value" id="intelligenceExtracted">0</div>
-                <div class="stat-label">Intel Extracted</div>
+                <span class="stat-icon">📊</span>
+                <div class="stat-value" id="intelligenceCount">0</div>
+                <div class="stat-label">Intelligence Extracted</div>
             </div>
         </div>
-        
+
         <!-- Main Grid -->
         <div class="grid">
-            <!-- Scam Detection Test -->
+            <!-- Scam Detection -->
             <div class="card">
-                <h2>🔍 Scam Detection Test</h2>
-                <textarea id="detectMessage" placeholder="Enter a suspicious message to analyze...
-Example: 'Congratulations! You won 10 lakh rupees. Click here to claim: bit.ly/prize123'">Congratulations! You won 10 lakh rupees in lucky draw. Click this link to claim: bit.ly/claim123</textarea>
-                <button onclick="testDetection()" id="detectBtn">
-                    Analyze Message
-                </button>
-                <div id="detectResult" class="result" style="display:none;"></div>
+                <h2 data-icon="🔍">Scam Detection Test</h2>
+                <textarea id="detectMessage"
+                    placeholder="Enter a message to analyze for scam indicators...&#10;&#10;Example: 'Congratulations! You won 10 lakh rupees. Click bit.ly/prize to claim now!'"></textarea>
+                <button onclick="detectScam()">🔍 Analyze Message</button>
+                <div id="detectResult" class="result" style="display: none;"></div>
             </div>
-            
-            <!-- AI Engagement Test -->
+
+            <!-- AI Engagement -->
             <div class="card">
-                <h2>💬 AI Engagement Test</h2>
+                <h2 data-icon="🤖">AI Engagement Test</h2>
                 <select id="personaSelect">
-                    <option value="">🎲 Random Persona</option>
-                    <option value="elderly">👴 Ramesh (Elderly, 68)</option>
-                    <option value="tech_novice">👩 Priya (Tech Novice, 35)</option>
-                    <option value="eager_investor">👨‍💼 Arjun (Investor, 42)</option>
+                    <option value="">Auto-select Persona</option>
+                    <option value="elderly">👴 Elderly (Ramesh Kumar)</option>
+                    <option value="tech_novice">👨 Tech Novice (Priya Sharma)</option>
+                    <option value="eager_investor">💼 Eager Investor (Amit Patel)</option>
                 </select>
-                <textarea id="engageMessage" placeholder="Enter scammer message to engage with...
-Example: 'Hello sir, your bank account will be blocked. Please verify by sharing OTP.'">Hello sir, your bank account will be blocked. Please verify your account by sharing OTP.</textarea>
-                <button onclick="testEngagement()" id="engageBtn">
-                    Start Engagement
-                </button>
-                <div id="engageResult" class="result" style="display:none;"></div>
+                <textarea id="engageMessage"
+                    placeholder="Enter a scam message to engage with AI...&#10;&#10;Example: 'Your KYC is pending. Update now or account will be suspended!'"></textarea>
+                <button onclick="engageAI()">💬 Engage with AI</button>
+                <div id="engageResult" class="result" style="display: none;"></div>
             </div>
         </div>
-        
-        <!-- Conversation History -->
-        <div class="card">
-            <h2>📜 Active Conversations</h2>
-            <div id="conversations">
-                <div class="empty-state">
-                    <div class="empty-state-icon">💬</div>
-                    <p>No active conversations yet. Start engaging with scammers above!</p>
+
+        <!-- Conversations & Intelligence -->
+        <div class="grid">
+            <!-- Active Conversations -->
+            <div class="card">
+                <h2 data-icon="💬">Active Conversations</h2>
+                <div id="conversations">
+                    <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No active conversations
+                        yet. Start by engaging with a scam message!</p>
                 </div>
             </div>
-            <button onclick="loadConversations()">🔄 Refresh Conversations</button>
+
+            <!-- Intelligence Extracted -->
+            <div class="card">
+                <h2 data-icon="🎯">Intelligence Extracted</h2>
+                <div id="intelligence">
+                    <p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No intelligence data
+                        yet. Engage with scammers to extract data!</p>
+                </div>
+            </div>
         </div>
     </div>
-    
+
     <script>
-        const API_BASE = '';
-        let currentConversationId = null;
-        let stats = {
-            totalScans: 0,
-            scamsDetected: 0,
-            activeConversations: 0,
-            intelligenceExtracted: 0
-        };
-        
-        // Update stats display
-        function updateStats() {
-            document.getElementById('totalScans').textContent = stats.totalScans;
-            document.getElementById('scamsDetected').textContent = stats.scamsDetected;
-            document.getElementById('activeConversations').textContent = stats.activeConversations;
-            document.getElementById('intelligenceExtracted').textContent = stats.intelligenceExtracted;
+        // Animated counter
+        function animateValue(id, start, end, duration) {
+            const obj = document.getElementById(id);
+            const range = end - start;
+            const increment = end > start ? 1 : -1;
+            const stepTime = Math.abs(Math.floor(duration / range));
+            let current = start;
+            const timer = setInterval(() => {
+                current += increment;
+                obj.textContent = current;
+                if (current === end) {
+                    clearInterval(timer);
+                }
+            }, stepTime);
         }
-        
-        // Test scam detection
-        async function testDetection() {
-            const message = document.getElementById('detectMessage').value.trim();
+
+        // Update stats
+        async function updateStats() {
+            try {
+                const response = await fetch('/conversations');
+                const data = await response.json();
+
+                const conversations = data.conversations || [];
+                const oldCount = parseInt(document.getElementById('activeChats').textContent) || 0;
+                const newCount = conversations.length;
+
+                if (newCount !== oldCount) {
+                    animateValue('activeChats', oldCount, newCount, 500);
+                }
+
+                // Calculate intelligence count
+                let totalIntelligence = 0;
+                conversations.forEach(conv => {
+                    totalIntelligence += conv.intelligence_count || 0;
+                });
+
+                const oldIntel = parseInt(document.getElementById('intelligenceCount').textContent) || 0;
+                if (totalIntelligence !== oldIntel) {
+                    animateValue('intelligenceCount', oldIntel, totalIntelligence, 500);
+                }
+
+            } catch (error) {
+                console.error('Error updating stats:', error);
+            }
+        }
+
+        // Detect scam
+        async function detectScam() {
+            const message = document.getElementById('detectMessage').value;
             const resultDiv = document.getElementById('detectResult');
-            const btn = document.getElementById('detectBtn');
-            
-            if (!message) {
+            const button = event.target;
+
+            if (!message.trim()) {
                 alert('Please enter a message to analyze');
                 return;
             }
-            
-            btn.disabled = true;
-            btn.innerHTML = 'Analyzing... <span class="spinner"></span>';
-            
+
+            button.disabled = true;
+            button.innerHTML = '🔍 Analyzing... <span class="spinner"></span>';
+
             try {
-                const response = await fetch(`${API_BASE}/detect`, {
+                const response = await fetch('/detect', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({message})
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message })
                 });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
+
                 const data = await response.json();
-                
-                stats.totalScans++;
-                if (data.is_scam) stats.scamsDetected++;
-                updateStats();
-                
-                const badge = data.is_scam ? 
-                    '<span class="badge badge-scam">🚨 SCAM DETECTED</span>' :
-                    '<span class="badge badge-safe">✅ SAFE MESSAGE</span>';
-                
+
+                // Update stats
+                const oldScans = parseInt(document.getElementById('totalScans').textContent) || 0;
+                animateValue('totalScans', oldScans, oldScans + 1, 300);
+
+                if (data.is_scam) {
+                    const oldScams = parseInt(document.getElementById('scamsDetected').textContent) || 0;
+                    animateValue('scamsDetected', oldScams, oldScams + 1, 300);
+                }
+
+                resultDiv.style.display = 'block';
                 resultDiv.innerHTML = `
-${badge}
+<span class="${data.is_scam ? 'error' : 'success'}">
+${data.is_scam ? '⚠️ SCAM DETECTED!' : '✅ Message appears safe'}
+</span>
 
-<strong>Confidence:</strong> ${(data.confidence * 100).toFixed(1)}%
-<strong>Scam Type:</strong> ${data.scam_type || 'N/A'}
+<span class="badge ${data.confidence > 0.7 ? 'badge-danger' : data.confidence > 0.4 ? 'badge-warning' : 'badge-success'}">
+Confidence: ${(data.confidence * 100).toFixed(0)}%
+</span>
 
-<strong>Analysis:</strong>
-${data.explanation || 'No additional details available.'}
-                `;
-                resultDiv.style.display = 'block';
+<span class="badge badge-info">Type: ${data.scam_type || 'N/A'}</span>
+
+Analysis: ${data.explanation || data.analysis || 'No additional details'}
+                `.trim();
+
             } catch (error) {
-                resultDiv.innerHTML = `<span class="badge badge-scam">❌ ERROR</span>\n\n${error.message}\n\nMake sure the server is running and your Gemini API key is configured.`;
                 resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
             } finally {
-                btn.disabled = false;
-                btn.innerHTML = 'Analyze Message';
+                button.disabled = false;
+                button.innerHTML = '🔍 Analyze Message';
             }
         }
-        
-        // Test AI engagement
-        async function testEngagement() {
-            const message = document.getElementById('engageMessage').value.trim();
+
+        // Engage AI
+        async function engageAI() {
+            const message = document.getElementById('engageMessage').value;
             const persona = document.getElementById('personaSelect').value;
             const resultDiv = document.getElementById('engageResult');
-            const btn = document.getElementById('engageBtn');
-            
-            if (!message) {
-                alert('Please enter a scammer message');
+            const button = event.target;
+
+            if (!message.trim()) {
+                alert('Please enter a message');
                 return;
             }
-            
-            btn.disabled = true;
-            btn.innerHTML = 'Engaging... <span class="spinner"></span>';
-            
+
+            button.disabled = true;
+            button.innerHTML = '💬 Engaging... <span class="spinner"></span>';
+
             try {
-                const body = {message};
-                if (currentConversationId) {
-                    body.conversation_id = currentConversationId;
-                }
-                
-                const response = await fetch(`${API_BASE}/engage`, {
+                const body = { message };
+                if (persona) body.persona_type = persona;
+
+                const response = await fetch('/engage', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body)
                 });
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
+
                 const data = await response.json();
-                currentConversationId = data.conversation_id;
-                
-                let extracted = '';
-                if (data.extracted_data && data.extracted_data.length > 0) {
-                    stats.intelligenceExtracted += data.extracted_data.length;
-                    updateStats();
-                    
-                    extracted = '\n\n<strong>🎯 Extracted Intelligence:</strong>\n';
-                    data.extracted_data.forEach(item => {
-                        extracted += `<div class="intelligence-item">
-<div class="intelligence-type">${item.type}</div>
-${item.value} (Confidence: ${(item.confidence * 100).toFixed(0)}%)
-</div>`;
-                    });
-                }
-                
+
+                resultDiv.style.display = 'block';
                 resultDiv.innerHTML = `
-<strong>Persona:</strong> ${data.persona}
-<strong>Conversation ID:</strong> <code>${data.conversation_id}</code>
+<span class="success">✅ AI Response Generated</span>
+
+<span class="badge badge-info">Persona: ${data.persona}</span>
+<span class="badge badge-success">Conversation ID: ${data.conversation_id.substring(0, 8)}...</span>
 
 <strong>AI Response:</strong>
-${data.response}${extracted}
-                `;
-                resultDiv.style.display = 'block';
-                
+${data.response}
+
+${data.extracted_data && data.extracted_data.length > 0 ? `
+<strong>Extracted Data:</strong>
+${data.extracted_data.map(item => `• ${item.type}: ${item.value} (${(item.confidence * 100).toFixed(0)}%)`).join('\n')}
+` : ''}
+                `.trim();
+
+                // Refresh conversations
                 loadConversations();
+                updateStats();
+
             } catch (error) {
-                resultDiv.innerHTML = `<span class="badge badge-scam">❌ ERROR</span>\n\n${error.message}\n\nMake sure:\n1. Server is running (python -m uvicorn app.main:app --reload)\n2. Gemini API key is set in .env file\n3. Dependencies are installed (pip install -r requirements.txt)`;
                 resultDiv.style.display = 'block';
+                resultDiv.innerHTML = `<span class="error">❌ Error: ${error.message}</span>`;
             } finally {
-                btn.disabled = false;
-                btn.innerHTML = 'Start Engagement';
+                button.disabled = false;
+                button.innerHTML = '💬 Engage with AI';
             }
         }
-        
+
         // Load conversations
         async function loadConversations() {
             try {
-                const response = await fetch(`${API_BASE}/conversations`);
-                
-                if (!response.ok) {
-                    throw new Error('Failed to load conversations');
-                }
-                
+                const response = await fetch('/conversations');
                 const data = await response.json();
-                const conversationsDiv = document.getElementById('conversations');
-                
-                if (data.conversations.length === 0) {
-                    conversationsDiv.innerHTML = `
-                        <div class="empty-state">
-                            <div class="empty-state-icon">💬</div>
-                            <p>No active conversations yet. Start engaging with scammers above!</p>
-                        </div>
-                    `;
-                    stats.activeConversations = 0;
-                } else {
-                    stats.activeConversations = data.conversations.length;
-                    conversationsDiv.innerHTML = data.conversations.map(conv => `
-                        <div class="conversation">
-                            <strong>👤 Persona:</strong> ${conv.persona}<br>
-                            <strong>💬 Messages:</strong> ${conv.message_count}<br>
-                            <strong>🎯 Intelligence:</strong> ${conv.intelligence_count} items<br>
-                            <strong>🆔 ID:</strong> <code>${conv.conversation_id}</code>
-                        </div>
-                    `).join('');
+                const conversations = data.conversations || [];
+
+                const container = document.getElementById('conversations');
+
+                if (conversations.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No active conversations yet.</p>';
+                    return;
                 }
-                
-                updateStats();
+
+                container.innerHTML = conversations.map(conv => `
+                    <div class="conversation-item">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                            <strong style="color: var(--primary);">👤 ${conv.persona}</strong>
+                            <span class="badge badge-info">${conv.message_count} messages</span>
+                        </div>
+                        <div style="color: var(--text-secondary); font-size: 0.9rem;">
+                            ID: ${conv.conversation_id.substring(0, 12)}...
+                        </div>
+                        <div style="margin-top: 0.5rem;">
+                            <span class="badge badge-success">🎯 ${conv.intelligence_count} intel items</span>
+                        </div>
+                    </div>
+                `).join('');
+
             } catch (error) {
                 console.error('Error loading conversations:', error);
             }
         }
-        
-        // Keyboard shortcuts
-        document.getElementById('detectMessage').addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'Enter') {
-                testDetection();
+
+        // Load intelligence
+        async function loadIntelligence() {
+            try {
+                const response = await fetch('/conversations');
+                const data = await response.json();
+                const conversations = data.conversations || [];
+
+                const container = document.getElementById('intelligence');
+
+                let allIntelligence = [];
+
+                for (const conv of conversations) {
+                    try {
+                        const intelResponse = await fetch(`/intelligence/${conv.conversation_id}`);
+                        const intelData = await intelResponse.json();
+
+                        ['bank_accounts', 'upi_ids', 'phones', 'urls', 'ifsc_codes', 'emails'].forEach(type => {
+                            if (intelData[type] && intelData[type].length > 0) {
+                                intelData[type].forEach(value => {
+                                    allIntelligence.push({ type, value });
+                                });
+                            }
+                        });
+                    } catch (e) {
+                        console.error('Error fetching intelligence:', e);
+                    }
+                }
+
+                if (allIntelligence.length === 0) {
+                    container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 2rem;">No intelligence data yet.</p>';
+                    return;
+                }
+
+                const typeIcons = {
+                    bank_accounts: '🏦',
+                    upi_ids: '💳',
+                    phones: '📞',
+                    urls: '🔗',
+                    ifsc_codes: '🏛️',
+                    emails: '📧'
+                };
+
+                container.innerHTML = allIntelligence.map(item => `
+                    <div class="intelligence-item">
+                        <strong>${typeIcons[item.type] || '📊'} ${item.type.replace('_', ' ').toUpperCase()}:</strong>
+                        <div style="margin-top: 0.5rem; color: var(--warning);">${item.value}</div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error loading intelligence:', error);
             }
+        }
+
+        // Auto-refresh
+        setInterval(() => {
+            updateStats();
+            loadConversations();
+            loadIntelligence();
+        }, 5000);
+
+        // Auto-resize textareas
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = textarea.scrollHeight + 'px';
+        }
+
+        // Add auto-resize to all textareas
+        document.addEventListener('DOMContentLoaded', () => {
+            const textareas = document.querySelectorAll('textarea');
+            textareas.forEach(textarea => {
+                // Initial resize
+                autoResize(textarea);
+
+                // Resize on input
+                textarea.addEventListener('input', function () {
+                    autoResize(this);
+                });
+
+                // Resize on focus (in case content was pasted)
+                textarea.addEventListener('focus', function () {
+                    autoResize(this);
+                });
+            });
         });
-        
-        document.getElementById('engageMessage').addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'Enter') {
-                testEngagement();
-            }
-        });
-        
-        // Load conversations on page load
+
+        // Initial load
+        updateStats();
         loadConversations();
-        
-        // Auto-refresh conversations every 10 seconds
-        setInterval(loadConversations, 10000);
+        loadIntelligence();
     </script>
 </body>
+
 </html>
