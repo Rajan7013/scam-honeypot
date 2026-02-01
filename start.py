@@ -1,21 +1,32 @@
-"""Quick start script to run the Scam Honeypot server."""
+"""Server startup script."""
 import sys
 import os
+from pathlib import Path
 
 def check_env():
-    """Check if .env file exists and has API key."""
-    if not os.path.exists('.env'):
+    """Check if .env file exists or environment variables are set."""
+    env_file = Path(".env")
+    
+    # Check if running on Render (environment variables set)
+    if os.getenv("GROQ_API_KEY") or os.getenv("GEMINI_API_KEY"):
+        print("✅ Using environment variables (cloud deployment)")
+        return True
+    
+    # Check for .env file (local development)
+    if not env_file.exists():
         print("\n" + "="*60)
         print("❌ ERROR: .env file not found!")
         print("="*60)
-        print("Please create a .env file with your Gemini API key:")
+        print("Please create a .env file with your API keys:")
         print("1. Copy .env.example to .env")
-        print("2. Get API key from: https://makersuite.google.com/app/apikey")
+        print("2. Get Groq API key from: https://console.groq.com/keys")
         print("3. Add it to .env file")
         print("="*60 + "\n")
         return False
     
-    # Check if API key is configured
+    print("✅ Found .env file")
+    
+    # Check if API key is configured in .env
     with open('.env', 'r') as f:
         content = f.read()
         if 'PASTE_YOUR_API_KEY_HERE' in content:
