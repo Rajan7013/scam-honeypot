@@ -15,7 +15,8 @@ class IntelligenceExtractor:
         "ifsc": r'\b[A-Z]{4}0[A-Z0-9]{6}\b',
         "email": r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b',
         "pan": r'\b[A-Z]{5}\d{4}[A-Z]\b',
-        "aadhaar": r'\b\d{4}\s?\d{4}\s?\d{4}\b'
+        "aadhaar": r'\b\d{4}\s?\d{4}\s?\d{4}\b',
+        "name": r'(?i)\b(?:name is|i am|this is)\s+([A-Z][a-z]+\s[A-Z][a-z]+)\b'
     }
     
     def __init__(self):

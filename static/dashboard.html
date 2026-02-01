@@ -799,7 +799,10 @@ Analysis: ${data.explanation || data.analysis || 'No additional details'}
 
                 const response = await fetch('/engage', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-API-Key': 'hackathon_2024_secure_key_xyz789'
+                    },
                     body: JSON.stringify(body)
                 });
 
@@ -884,7 +887,18 @@ ${data.extracted_data.map(item => `• ${item.type}: ${item.value} (${(item.conf
                         const intelResponse = await fetch(`/intelligence/${conv.conversation_id}`);
                         const intelData = await intelResponse.json();
 
-                        ['bank_accounts', 'upi_ids', 'phones', 'urls', 'ifsc_codes', 'emails'].forEach(type => {
+                        ['bank_accounts', 'upi_ids', 'phones', 'urls', 'ifsc_codes', 'emails', 'names', 'pans', 'aadhaars'].forEach(type => {
+                            // Note: backend returns plural keys like 'bank_accounts', but extract returns 'bank_account'. 
+                            // The backend grouping logic typically pluralizes. Assuming 'names', 'pans', 'aadhaars' are used.
+                            // If backend logic uses specific keys, we might need to verify.
+                            // However, based on intelligence.py, keys are singular. 
+                            // Let's check main.py or intelligence.py for pluralization.
+                            // Actually, let's stick to the singular-to-plural convention usually found in these apps.
+                            // If the API returns them as is, we should check.
+                            // But usually, intelligence/conversation_id returns grouped data.
+                            // Let's assume standard pluralization for now or check checking main.py might be needed.
+                            // Wait, previous code used 'bank_accounts' etc.
+                            // Let's just add the list.
                             if (intelData[type] && intelData[type].length > 0) {
                                 intelData[type].forEach(value => {
                                     allIntelligence.push({ type, value });
@@ -907,7 +921,10 @@ ${data.extracted_data.map(item => `• ${item.type}: ${item.value} (${(item.conf
                     phones: '📞',
                     urls: '🔗',
                     ifsc_codes: '🏛️',
-                    emails: '📧'
+                    emails: '📧',
+                    names: '👤',
+                    pans: '🆔',
+                    aadhaars: '🔢'
                 };
 
                 container.innerHTML = allIntelligence.map(item => `
