@@ -34,6 +34,28 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add request logging middleware for debugging
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    if "/hackathon/chat" in str(request.url):
+        print(f"\n{'='*60}")
+        print(f"📨 INCOMING REQUEST TO /hackathon/chat")
+        print(f"Method: {request.method}")
+        print(f"Headers: {dict(request.headers)}")
+        try:
+            body = await request.body()
+            print(f"Body: {body.decode('utf-8') if body else 'EMPTY'}")
+            # Re-create request with body for downstream handlers
+            from starlette.requests import Request as StarletteRequest
+            async def receive():
+                return {"type": "http.request", "body": body}
+            request = StarletteRequest(request.scope, receive)
+        except:
+            print("Body: Could not read")
+        print(f"{'='*60}\n")
+    response = await call_next(request)
+    return response
+
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
