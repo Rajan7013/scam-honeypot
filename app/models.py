@@ -63,13 +63,19 @@ class HackathonMessage(BaseModel):
     """Message format for hackathon platform."""
     sender: str  # 'scammer' or 'user'
     text: str
-    timestamp: int
+    timestamp: float  # Changed to float to handle int or float
+
+    class Config:
+        extra = "ignore"
 
 class HackathonMetadata(BaseModel):
     """Metadata for hackathon platform."""
     channel: Optional[str] = "SMS"
     language: Optional[str] = "English"
     locale: Optional[str] = "IN"
+
+    class Config:
+        extra = "ignore"
 
 class HackathonChatRequest(BaseModel):
     """Request format from hackathon platform."""
