@@ -57,3 +57,28 @@ class ConversationHistory(BaseModel):
     messages: List[ConversationMessage]
     intelligence_count: int
     started_at: datetime
+
+# Hackathon Specific Models
+class HackathonMessage(BaseModel):
+    """Message format for hackathon platform."""
+    sender: str  # 'scammer' or 'user'
+    text: str
+    timestamp: int
+
+class HackathonMetadata(BaseModel):
+    """Metadata for hackathon platform."""
+    channel: Optional[str] = "SMS"
+    language: Optional[str] = "English"
+    locale: Optional[str] = "IN"
+
+class HackathonChatRequest(BaseModel):
+    """Request format from hackathon platform."""
+    sessionId: str
+    message: HackathonMessage
+    conversationHistory: List[HackathonMessage] = []
+    metadata: Optional[HackathonMetadata] = None
+
+class HackathonChatResponse(BaseModel):
+    """Response format expected by platform."""
+    status: str
+    reply: str

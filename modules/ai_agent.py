@@ -1,11 +1,16 @@
 """AI Agent with support for both Gemini and Groq APIs."""
+import json
+import logging
+import asyncio
 import uuid
 from typing import Dict, List, Optional
+from datetime import datetime
 import google.generativeai as genai
 from groq import Groq
 from app import config
 from modules.personas import PERSONAS, Persona
 from modules.intelligence import IntelligenceExtractor
+from modules.reporting import reporter
 
 
 class AIAgent:
@@ -48,24 +53,11 @@ class AIAgent:
             self.model = None
             self.api_available = False
     
-    def start_conversation(self, initial_message: str, persona_type: str = None) -> Dict:
-        """
-        Start a new conversation with a scammer.
-        
-        Args:
-            initial_message: The scammer's initial message
-            persona_type: Type of persona to use (elderly, tech_novice, eager_investor)
-        
-        Returns:
-            Dict with conversation_id, response, persona, and extracted data
-        """
-        # Select persona
-        if persona_type and persona_type in PERSONAS:
-            persona = PERSONAS[persona_type]
-        else:
-            # Random persona selection
-            import random
-            persona = random.choice(list(PERSONAS.values()))
+    def start_conversation(self, message: str, session_id: Optional[str] = None) -> Dict:
+        """Start a new conversation with a selected persona."""
+        # Select persona (randomly, as persona_type is removed)
+        import random
+        persona = random.choice(list(PERSONAS.values()))
         
         # Create conversation
         conversation_id = str(uuid.uuid4())
@@ -78,11 +70,11 @@ class AIAgent:
         # Add scammer's message
         self.conversations[conversation_id]["messages"].append({
             "role": "scammer",
-            "content": initial_message
+            "content": message
         })
         
         # Generate response
-        response = self._generate_response(conversation_id, initial_message, persona)
+        response = self._generate_response(conversation_id, message, persona)
         
         # Add AI response
         self.conversations[conversation_id]["messages"].append({
@@ -92,9 +84,24 @@ class AIAgent:
         
         # Extract intelligence from scammer's message
         extractor = IntelligenceExtractor()
-        extracted = extractor.extract(initial_message, conversation_id)
+        extracted = extractor.extract(message, conversation_id)
         if extracted:
             self.conversations[conversation_id]["extracted_intelligence"].extend(extracted)
+        
+        # REPORTING: If session_id is provided, report results to platform
+        if session_id:
+            # We report asynchronously to not block the response
+            scam_detected = True # If we are in ai_agent, scam was detected
+            total_messages = len(self.conversations[conversation_id]["messages"])
+            all_extracted = self.conversations[conversation_id]["extracted_intelligence"]
+            
+            asyncio.create_task(reporter.report_final_result(
+                session_id=session_id,
+                scam_detected=scam_detected,
+                total_messages=total_messages,
+                extracted_data=all_extracted,
+                agent_notes=f"Engaging with {persona.name} persona. Scam intent detected."
+            ))
         
         return {
             "conversation_id": conversation_id,
@@ -103,13 +110,14 @@ class AIAgent:
             "extracted_data": extracted
         }
     
-    def continue_conversation(self, conversation_id: str, message: str) -> Dict:
+    def continue_conversation(self, conversation_id: str, message: str, session_id: Optional[str] = None) -> Dict:
         """
         Continue an existing conversation.
         
         Args:
             conversation_id: ID of the conversation
             message: New message from scammer
+            session_id: External session ID (for hackathon platform)
         
         Returns:
             Dict with response and extracted data
@@ -141,6 +149,21 @@ class AIAgent:
         if extracted:
             conv["extracted_intelligence"].extend(extracted)
         
+        # REPORTING: If session_id is provided, report results to platform
+        if session_id:
+            # We report asynchronously to not block the response
+            scam_detected = True # If we are in ai_agent, scam was detected
+            total_messages = len(conv["messages"])
+            all_extracted = conv["extracted_intelligence"]
+            
+            asyncio.create_task(reporter.report_final_result(
+                session_id=session_id,
+                scam_detected=scam_detected,
+                total_messages=total_messages,
+                extracted_data=all_extracted,
+                agent_notes=f"Engaging with {persona.name} persona. Scam intent detected."
+            ))
+
         return {
             "conversation_id": conversation_id,
             "response": response,
