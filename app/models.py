@@ -78,6 +78,9 @@ class HackathonChatRequest(BaseModel):
     conversationHistory: List[HackathonMessage] = []
     metadata: Optional[HackathonMetadata] = None
 
+    class Config:
+        extra = "ignore"
+
 class HackathonChatResponse(BaseModel):
     """Response format expected by platform."""
     status: str
