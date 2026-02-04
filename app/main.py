@@ -24,6 +24,16 @@ app = FastAPI(
     version="1.0.0"
 )
 
+# Enable CORS for Hackathon Tester
+from fastapi.middleware.cors import CORSMiddleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow GUVI and all other origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
