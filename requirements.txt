@@ -8,3 +8,4 @@ langchain-groq
 langchain-core
 sqlalchemy
 httpx
+google-generativeai

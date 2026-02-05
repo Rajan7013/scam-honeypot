@@ -57,8 +57,10 @@ class HoneypotReporter:
                     intelligence_dict["phishingLinks"].append(value)
                 elif item_type == "phone":
                     intelligence_dict["phoneNumbers"].append(value)
-                # We map internal keywords triggers if available, currently mostly empty
-                # unless we track them explicitly. 
+            
+            # Deduplicate lists
+            for key in intelligence_dict:
+                intelligence_dict[key] = list(set(intelligence_dict[key]))
             
             # Construct payload
             payload = {
