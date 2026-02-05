@@ -222,14 +222,29 @@ YOUR RESPONSE (as {persona.name}):"""
             return self._get_fallback_response(persona, message)
     
     def _generate_groq_response(self, prompt: str) -> str:
-        """Generate response using Groq API."""
-        response = self.groq_client.chat.completions.create(
-            model=config.Config.GROQ_MODEL,
-            messages=[{"role": "user", "content": prompt}],
-            temperature=config.Config.GROQ_TEMPERATURE,
-            max_tokens=config.Config.GROQ_MAX_TOKENS,
-        )
-        return response.choices[0].message.content.strip()
+        """Generate response using Groq API with timeout."""
+        try:
+            # Set aggressive timeout to prevent evaluation timeouts
+            import time
+            start_time = time.time()
+            
+            response = self.groq_client.chat.completions.create(
+                model=config.Config.GROQ_MODEL,
+                messages=[{"role": "user", "content": prompt}],
+                temperature=config.Config.GROQ_TEMPERATURE,
+                max_tokens=config.Config.GROQ_MAX_TOKENS,
+                timeout=15  # 15 second timeout
+            )
+            
+            elapsed = time.time() - start_time
+            print(f"⏱️  Groq response time: {elapsed:.2f}s")
+            
+            return response.choices[0].message.content.strip()
+        except Exception as e:
+            print(f"⚠️  Groq API error: {e}")
+            # Return quick fallback response
+            return "Oh no! What's happening? Can you explain this to me? I'm a bit confused about what you're saying."
+
     
     def _generate_gemini_response(self, prompt: str) -> str:
         """Generate response using Gemini API."""

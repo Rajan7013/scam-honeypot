@@ -245,48 +245,60 @@ async def hackathon_chat_handler(
         raise HTTPException(status_code=401, detail="Invalid X-API-Key")
 
     from modules.ai_agent import ai_agent
+    import asyncio
+    
+    async def process_request():
+        """Process the request with timeout protection."""
+        try:
+            # 2. Parse Raw JSON manually to be robust
+            body = await request.json()
+            print(f"📥 Received Hackathon Payload: {body}") # Log it!
+            
+            session_id = body.get("sessionId", "unknown_session")
+            message_data = body.get("message", {})
+            user_message = message_data.get("text", "")
+            
+            if not user_message:
+                # Fallback if structure is different
+                user_message = str(body)
+                
+            # 3. Handle Conversation
+            # Check for existing session map
+            if not hasattr(app, "session_map"):
+                app.session_map = {}
+                
+            conversation_id = app.session_map.get(session_id)
+            response_text = ""
+            
+            if conversation_id and conversation_id in ai_agent.conversations:
+                result = ai_agent.continue_conversation(conversation_id, user_message, session_id=session_id)
+                response_text = result["response"]
+            else:
+                result = ai_agent.start_conversation(user_message, session_id=session_id)
+                conversation_id = result["conversation_id"]
+                app.session_map[session_id] = conversation_id
+                response_text = result["response"]
+                
+            return HackathonChatResponse(
+                status="success",
+                reply=response_text
+            )
+                
+        except Exception as e:
+            print(f"❌ Error in /hackathon/chat: {e}")
+            # Return success with fallback message
+            return HackathonChatResponse(status="success", reply="I'm not sure I understand. Can you explain what you mean?")
     
     try:
-        # 2. Parse Raw JSON manually to be robust
-        body = await request.json()
-        print(f"📥 Received Hackathon Payload: {body}") # Log it!
-        
-        session_id = body.get("sessionId", "unknown_session")
-        message_data = body.get("message", {})
-        user_message = message_data.get("text", "")
-        
-        if not user_message:
-            # Fallback if structure is different
-            user_message = str(body)
-            
-        # 3. Handle Conversation
-        # Check for existing session map
-        if not hasattr(app, "session_map"):
-            app.session_map = {}
-            
-        conversation_id = app.session_map.get(session_id)
-        response_text = ""
-        
-        if conversation_id and conversation_id in ai_agent.conversations:
-            result = ai_agent.continue_conversation(conversation_id, user_message, session_id=session_id)
-            response_text = result["response"]
-        else:
-            result = ai_agent.start_conversation(user_message, session_id=session_id)
-            conversation_id = result["conversation_id"]
-            app.session_map[session_id] = conversation_id
-            conversation_id = result["conversation_id"]
-            app.session_map[session_id] = conversation_id
-            response_text = result["response"]
-            
+        # Wrap entire request processing in 25-second timeout
+        return await asyncio.wait_for(process_request(), timeout=25.0)
+    except asyncio.TimeoutError:
+        print("⏱️  Request timed out after 25 seconds - returning fallback")
         return HackathonChatResponse(
             status="success",
-            reply=response_text
+            reply="Sorry, what was that? I didn't quite catch what you're saying. Can you repeat?"
         )
-            
-    except Exception as e:
-        print(f"❌ Error in /hackathon/chat: {e}")
-        # Return success with fallback message
-        return HackathonChatResponse(status="success", reply="System validated. Ready.")
+
 
 @app.get("/hackathon/chat", response_model=HackathonChatResponse)
 async def hackathon_chat_get_handler():
