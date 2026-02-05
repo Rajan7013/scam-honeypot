@@ -305,6 +305,16 @@ async def get_conversation(conversation_id: str):
         "extracted_intelligence": conv["extracted_intelligence"]
     }
 
+@app.get("/intelligence/{conversation_id}")
+async def get_intelligence(conversation_id: str):
+    """Get extracted intelligence for a specific conversation."""
+    from modules.ai_agent import ai_agent
+    
+    if conversation_id not in ai_agent.conversations:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    return ai_agent.conversations[conversation_id]["extracted_intelligence"]
+
 @app.get("/dashboard", response_class=HTMLResponse)
 async def get_dashboard():
     """Serve the dashboard HTML."""
