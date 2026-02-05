@@ -6,3 +6,5 @@ requests
 groq==0.13.0
 langchain-groq
 langchain-core
+sqlalchemy
+httpx
