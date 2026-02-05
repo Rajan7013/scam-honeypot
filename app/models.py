@@ -12,12 +12,13 @@ class ScamDetectionResponse(BaseModel):
     is_scam: bool
     confidence: float = Field(..., ge=0.0, le=1.0)
     scam_type: Optional[str] = None
-    explanation: Optional[str] = None
+    indicators: List[str] = []
 
 class EngageRequest(BaseModel):
     """Request model for engaging with scammer."""
     message: str
     conversation_id: Optional[str] = None
+    persona_type: Optional[str] = None
 
 class EngageResponse(BaseModel):
     """Response model for engagement."""
@@ -25,6 +26,36 @@ class EngageResponse(BaseModel):
     persona: str
     conversation_id: str
     extracted_data: List[dict] = []
+
+# Aliases for compatibility
+EngagementRequest = EngageRequest
+EngagementResponse = EngageResponse
+
+class ExtractedIntelligence(BaseModel):
+    """Model for extracted intelligence data."""
+    upiIds: List[str] = []
+    bankAccounts: List[str] = []
+    phoneNumbers: List[str] = []
+    phishingLinks: List[str] = []
+    suspiciousKeywords: List[str] = []
+    emails: List[str] = []
+
+class WebhookRequest(BaseModel):
+    """Request model for webhook."""
+    message: str
+    session_id: Optional[str] = None
+
+class WebhookResponse(BaseModel):
+    """Response model for webhook."""
+    scam_detected: bool
+    confidence: float
+    agent_engaged: bool
+    conversation_turns: int
+    extracted_intelligence: ExtractedIntelligence
+    agent_response: str
+    conversation_id: Optional[str] = None
+    agent_persona: Optional[str] = None
+    scam_type: Optional[str] = None
 
 class IntelligenceItem(BaseModel):
     """Model for extracted intelligence."""

@@ -3,210 +3,140 @@ from fastapi import FastAPI, HTTPException, Depends, Header, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse
 from sqlalchemy.orm import Session
-import uvicorn
-import asyncio
-from typing import Optional
+from typing import Optional, List, Dict
+import logging
+from datetime import datetime
 
-from app.config import config
+from app import models, database, config
 from app.models import (
     ScamDetectionRequest, ScamDetectionResponse,
-    EngageRequest, EngageResponse,
-    IntelligenceResponse,
-    HackathonChatRequest, HackathonChatResponse
+    EngagementRequest, EngagementResponse,
+    WebhookRequest, WebhookResponse,
+    HackathonChatResponse
 )
-from app.webhook_models import WebhookRequest, WebhookResponse, ExtractedIntelligence
-from app.database import init_db, get_db
 
-# Initialize FastAPI app
+# Initialize logging
+logging.basicConfig(
+    level=logging.INFO,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+
+# Create FastAPI app
 app = FastAPI(
-    title="Agentic Honey-Pot API",
+    title="Scam Honeypot API",
     description="AI-powered scam detection and engagement system",
     version="1.0.0"
 )
 
-# Enable CORS for Hackathon Tester
+# Enable CORS
 from fastapi.middleware.cors import CORSMiddleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow GUVI and all other origins
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Add request logging middleware for debugging
-@app.middleware("http")
-async def log_requests(request: Request, call_next):
-    if "/hackathon/chat" in str(request.url):
-        print(f"\n{'='*60}")
-        print(f"📨 INCOMING REQUEST TO /hackathon/chat")
-        print(f"Method: {request.method}")
-        print(f"Headers: {dict(request.headers)}")
-        try:
-            body = await request.body()
-            print(f"Body: {body.decode('utf-8') if body else 'EMPTY'}")
-            # Re-create request with body for downstream handlers
-            from starlette.requests import Request as StarletteRequest
-            async def receive():
-                return {"type": "http.request", "body": body}
-            request = StarletteRequest(request.scope, receive)
-        except:
-            print("Body: Could not read")
-        print(f"{'='*60}\n")
-    response = await call_next(request)
-    return response
-
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# Database initialization
 @app.on_event("startup")
-async def startup_event():
-    """Initialize database and start autonomous agent on startup."""
-    try:
-        config.validate()
-        init_db()
-        print("✅ Database initialized successfully")
-        print(f"✅ Server running on http://{config.HOST}:{config.PORT}")
-        
-        # Start autonomous agent in background
-        from modules.autonomous_agent import autonomous_agent
-        asyncio.create_task(autonomous_agent.start())
-        
-    except Exception as e:
-        print(f"❌ Startup error: {e}")
-        raise
+async def startup():
+    """Initialize database on startup."""
+    database.init_db()
+    print("✅ Database initialized successfully")
 
-@app.get("/", response_class=HTMLResponse)
+@app.get("/")
 async def root():
-    """Root endpoint - redirect to dashboard."""
-    return """
-    <html>
-        <head>
-            <title>Scam Honeypot</title>
-            <style>
-                body {
-                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    height: 100vh;
-                    margin: 0;
-                    color: white;
-                }
-                .container {
-                    text-align: center;
-                    background: rgba(255,255,255,0.1);
-                    padding: 3rem;
-                    border-radius: 20px;
-                    backdrop-filter: blur(10px);
-                }
-                h1 { font-size: 3rem; margin: 0; }
-                p { font-size: 1.2rem; margin: 1rem 0; }
-                a {
-                    display: inline-block;
-                    margin: 0.5rem;
-                    padding: 1rem 2rem;
-                    background: white;
-                    color: #667eea;
-                    text-decoration: none;
-                    border-radius: 10px;
-                    font-weight: bold;
-                    transition: transform 0.2s;
-                }
-                a:hover { transform: scale(1.05); }
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <h1>🕵️ Agentic Honey-Pot</h1>
-                <p>AI-Powered Scam Detection & Intelligence Extraction</p>
-                <div>
-                    <a href="/docs">📚 API Documentation</a>
-                    <a href="/static/dashboard.html">📊 Dashboard</a>
-                </div>
-            </div>
-        </body>
-    </html>
-    """
+    """Root endpoint - returns dashboard."""
+    return {
+        "message": "Scam Honeypot API",
+        "version": "1.0.0",
+        "endpoints": {
+            "dashboard": "/static/dashboard.html",
+            "docs": "/docs",
+            "detect": "/detect",
+            "engage": "/engage",
+            "webhook": "/webhook",
+            "hackathon_chat": "/hackathon/chat"
+        }
+    }
 
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
-    return {"status": "healthy", "service": "Agentic Honey-Pot"}
+    return {"status": "healthy", "timestamp": datetime.now().isoformat()}
+
+# Import endpoints after app initialization to avoid circular imports
+from modules.scam_detector import scam_detector
+from modules.intelligence import IntelligenceExtractor
 
 @app.post("/webhook", response_model=WebhookResponse)
 async def webhook_handler(
     request: WebhookRequest,
-    x_api_key: Optional[str] = Header(None, alias="X-API-Key")
+    db: Session = Depends(database.get_db)
 ):
     """
-    Official hackathon webhook endpoint.
-    Receives messages from Mock Scammer API and returns structured intelligence.
+    Main webhook endpoint for receiving scam messages.
+    This is the primary entry point for the hackathon evaluation.
     """
-    # Validate API key
-    if x_api_key != config.HACKATHON_API_KEY:
-        raise HTTPException(
-            status_code=401,
-            detail="Invalid API key. Please provide valid X-API-Key header."
-        )
-    
-    from modules.scam_detector import scam_detector
     from modules.ai_agent import ai_agent
+    from modules.reporting import reporter
     
     try:
         # Step 1: Detect scam
-        is_scam, confidence, scam_type, _ = scam_detector.detect(request.message)
+        detection_result = scam_detector.detect(request.message)
+        is_scam = detection_result["is_scam"]
+        confidence = detection_result["confidence"]
+        scam_type = detection_result.get("scam_type", "unknown")
         
-        # Step 2: Engage if scam detected
+        # Step 2: If scam detected, engage with AI agent
         agent_engaged = False
         agent_response = ""
-        conversation_id = request.conversation_id or ""
-        conversation_turns = 0
+        conversation_id = None
         persona = None
+        conversation_turns = 0
         
-        if is_scam and confidence > 0.7:
-            # Agent handoff - engage with scammer
+        if is_scam:
+            # Start or continue conversation
+            result = ai_agent.start_conversation(request.message)
             agent_engaged = True
-            
-            if conversation_id and conversation_id in ai_agent.conversations:
-                # Continue existing conversation
-                result = ai_agent.continue_conversation(conversation_id, request.message)
-                conversation_turns = len(ai_agent.conversations[conversation_id]["messages"]) // 2
-            else:
-                # Start new conversation
-                result = ai_agent.start_conversation(request.message)
-                conversation_id = result["conversation_id"]
-                conversation_turns = 1
-            
             agent_response = result["response"]
+            conversation_id = result["conversation_id"]
             persona = result["persona"]
-            
-            # Step 3: Extract intelligence
-            extracted_data = result.get("extracted_data", [])
-        else:
-            # Not a scam or low confidence
-            agent_response = "Thank you for your message."
-            extracted_data = []
+            conversation_turns = 1
         
-        # Step 4: Format intelligence
-        intelligence = ExtractedIntelligence()
+        # Step 3: Extract intelligence
+        extractor = IntelligenceExtractor()
+        extracted = extractor.extract(request.message, conversation_id or "no-conversation")
         
-        for item in extracted_data:
-            item_type = item.get("type", "")
+        # Step 4: Build intelligence object
+        intelligence = models.ExtractedIntelligence(
+            upiIds=[],
+            bankAccounts=[],
+            phoneNumbers=[],
+            phishingLinks=[],
+            suspiciousKeywords=[],
+            emails=[]
+        )
+        
+        for item in extracted:
             value = item.get("value", "")
+            intel_type = item.get("type", "")
             
-            if item_type == "bank_account":
-                intelligence.bank_accounts.append(value)
-            elif item_type == "upi_id":
-                intelligence.upi_ids.append(value)
-            elif item_type == "url":
-                intelligence.phishing_urls.append(value)
-            elif item_type == "phone":
-                intelligence.phone_numbers.append(value)
-            elif item_type == "ifsc":
-                intelligence.ifsc_codes.append(value)
-            elif item_type == "email":
+            if intel_type == "upi_id":
+                intelligence.upiIds.append(value)
+            elif intel_type == "bank_account":
+                intelligence.bankAccounts.append(value)
+            elif intel_type == "phone":
+                intelligence.phoneNumbers.append(value)
+            elif intel_type == "url":
+                intelligence.phishingLinks.append(value)
+            elif intel_type == "keyword":
+                intelligence.suspiciousKeywords.append(value)
+            elif intel_type == "email":
                 intelligence.emails.append(value)
         
         # Step 5: Return official format
@@ -241,7 +171,7 @@ async def hackathon_chat_handler(
     Accepts raw JSON to avoid validation errors.
     """
     # 1. Validate API Key
-    if x_api_key != config.HACKATHON_API_KEY:
+    if x_api_key != config.config.HACKATHON_API_KEY:
         raise HTTPException(status_code=401, detail="Invalid X-API-Key")
 
     from modules.ai_agent import ai_agent
@@ -311,124 +241,95 @@ async def detect_scam(request: ScamDetectionRequest):
     """Detect if a message is a scam."""
     from modules.scam_detector import scam_detector
     
-    is_scam, confidence, scam_type, explanation = scam_detector.detect(request.message)
+    result = scam_detector.detect(request.message)
     
     return ScamDetectionResponse(
-        is_scam=is_scam,
-        confidence=confidence,
-        scam_type=scam_type,
-        explanation=explanation
+        is_scam=result["is_scam"],
+        confidence=result["confidence"],
+        scam_type=result.get("scam_type"),
+        indicators=result.get("indicators", [])
     )
 
-@app.post("/engage", response_model=EngageResponse)
-async def engage_scammer(request: EngageRequest, db: Session = Depends(get_db)):
-    """Engage with scammer using AI persona."""
+@app.post("/engage", response_model=EngagementResponse)
+async def engage_scammer(request: EngagementRequest):
+    """Engage with a scammer using AI agent."""
     from modules.ai_agent import ai_agent
     
-    try:
-        if request.conversation_id:
-            # Continue existing conversation
-            result = ai_agent.continue_conversation(request.conversation_id, request.message)
-        else:
-            # Start new conversation
-            result = ai_agent.start_conversation(request.message)
-        
-        return EngageResponse(**result)
+    if request.conversation_id and request.conversation_id in ai_agent.conversations:
+        # Continue existing conversation
+        result = ai_agent.continue_conversation(request.conversation_id, request.message)
+    else:
+        # Start new conversation
+        result = ai_agent.start_conversation(request.message, request.persona_type)
     
-    except Exception as e:
-        import traceback
-        error_details = traceback.format_exc()
-        print(f"❌ Error in /engage endpoint: {str(e)}")
-        print(f"   Full traceback:\n{error_details}")
-        raise HTTPException(status_code=500, detail=f"Engagement error: {str(e)}")
-
-@app.get("/intelligence/{conversation_id}", response_model=IntelligenceResponse)
-async def get_intelligence(conversation_id: str, db: Session = Depends(get_db)):
-    """Retrieve extracted intelligence for a conversation."""
-    from modules.ai_agent import ai_agent
-    
-    conv = ai_agent.get_conversation(conversation_id)
-    if not conv:
-        raise HTTPException(status_code=404, detail="Conversation not found")
-    
-    # Organize extracted intelligence by type
-    intelligence = conv["extracted_intelligence"]
-    
-    response = IntelligenceResponse(
-        conversation_id=conversation_id,
-        bank_accounts=[],
-        upi_ids=[],
-        phones=[],
-        urls=[],
-        ifsc_codes=[],
-        total_items=len(intelligence)
+    return EngagementResponse(
+        conversation_id=result["conversation_id"],
+        response=result["response"],
+        persona=result["persona"],
+        extracted_data=result.get("extracted_data", [])
     )
-    
-    for item in intelligence:
-        if item["type"] == "bank_account":
-            response.bank_accounts.append(item["value"])
-        elif item["type"] == "upi_id":
-            response.upi_ids.append(item["value"])
-        elif item["type"] == "phone":
-            response.phones.append(item["value"])
-        elif item["type"] == "url":
-            response.urls.append(item["value"])
-        elif item["type"] == "ifsc":
-            response.ifsc_codes.append(item["value"])
-    
-    return response
 
 @app.get("/conversations")
-async def get_conversations(db: Session = Depends(get_db)):
-    """Get all conversation histories."""
+async def list_conversations():
+    """List all active conversations."""
     from modules.ai_agent import ai_agent
     
-    conversations = ai_agent.get_all_conversations()
+    conversations = []
+    for conv_id, conv_data in ai_agent.conversations.items():
+        conversations.append({
+            "conversation_id": conv_id,
+            "persona": conv_data["persona"].name,
+            "message_count": len(conv_data["messages"]),
+            "intelligence_count": len(conv_data["extracted_intelligence"])
+        })
+    
     return {"conversations": conversations}
 
-@app.get("/autonomous/status")
-async def get_autonomous_status():
-    """Get autonomous agent status."""
-    from modules.autonomous_agent import autonomous_agent
+@app.get("/conversations/{conversation_id}")
+async def get_conversation(conversation_id: str):
+    """Get details of a specific conversation."""
+    from modules.ai_agent import ai_agent
     
+    if conversation_id not in ai_agent.conversations:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    conv = ai_agent.conversations[conversation_id]
     return {
-        "running": autonomous_agent.running,
-        "active_conversations": len(autonomous_agent.active_conversations),
-        "poll_interval": autonomous_agent.poll_interval,
-        "conversations": [
-            {
-                "id": conv_id[:8],
-                "persona": conv_data['persona'],
-                "messages": conv_data['message_count'],
-                "scam_type": conv_data.get('scam_type', 'unknown')
-            }
-            for conv_id, conv_data in autonomous_agent.active_conversations.items()
-        ]
+        "conversation_id": conversation_id,
+        "persona": {
+            "name": conv["persona"].name,
+            "age": conv["persona"].age,
+            "occupation": conv["persona"].occupation
+        },
+        "messages": conv["messages"],
+        "extracted_intelligence": conv["extracted_intelligence"]
     }
 
-@app.post("/autonomous/start")
-async def start_autonomous():
-    """Start autonomous agent."""
-    from modules.autonomous_agent import autonomous_agent
-    
-    if not autonomous_agent.running:
-        asyncio.create_task(autonomous_agent.start())
-        return {"status": "started", "message": "Autonomous agent started"}
-    return {"status": "already_running", "message": "Agent is already running"}
+@app.get("/dashboard", response_class=HTMLResponse)
+async def get_dashboard():
+    """Serve the dashboard HTML."""
+    with open("static/dashboard.html", "r") as f:
+        return f.read()
 
-@app.post("/autonomous/stop")
-async def stop_autonomous():
-    """Stop autonomous agent."""
-    from modules.autonomous_agent import autonomous_agent
+@app.get("/stats")
+async def get_stats():
+    """Get system statistics."""
+    from modules.ai_agent import ai_agent
+    from modules.scam_detector import scam_detector
     
-    autonomous_agent.stop()
-    return {"status": "stopped", "message": "Autonomous agent stopped"}
+    total_conversations = len(ai_agent.conversations)
+    total_intelligence = sum(
+        len(conv["extracted_intelligence"]) 
+        for conv in ai_agent.conversations.values()
+    )
+    
+    return {
+        "total_scans": scam_detector.total_scans,
+        "scams_detected": scam_detector.scams_detected,
+        "active_conversations": total_conversations,
+        "intelligence_extracted": total_intelligence
+    }
 
 if __name__ == "__main__":
-    uvicorn.run(
-        "app.main:app",
-        host=config.HOST,
-        port=config.PORT,
-        reload=config.DEBUG
-    )
-
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
