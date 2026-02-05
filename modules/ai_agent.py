@@ -5,7 +5,10 @@ import asyncio
 import uuid
 from typing import Dict, List, Optional
 from datetime import datetime
-import google.generativeai as genai
+try:
+    import google.generativeai as genai
+except ImportError:
+    genai = None # Handle missing dependency gracefully
 from groq import Groq
 from app import config
 from modules.personas import PERSONAS, Persona
